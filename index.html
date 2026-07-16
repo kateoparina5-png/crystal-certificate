@@ -168,13 +168,16 @@ h1.pg-title{color:#93c5fd;font-size:14px;font-weight:500;letter-spacing:2px;text
 
 /* ── ПЕЧАТЬ ── */
 @media print{
+  @page{ size:landscape; margin:8mm; }
   body{background:#fff!important;padding:0!important;min-height:auto}
   .editor,.actions,.pg-title,.no-print{display:none!important}
-  .cert-wrap{max-width:100%;width:100%}
+  .cert-wrap{max-width:100%;width:100%;
+    break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
   .certificate{
     aspect-ratio:16/9;width:100%;height:auto;border-radius:0;
     background:linear-gradient(155deg,#040911,#050d1c,#071a30,#040911)!important;
     -webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;
+    break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid;
   }
   .c-main-title{font-size:clamp(44px,7vw,90px)!important}
 
@@ -182,6 +185,11 @@ h1.pg-title{color:#93c5fd;font-size:14px;font-weight:500;letter-spacing:2px;text
      рендерятся не так, как задумано (сплошным цветным пятном) — убираем их
      из печати, оставляем только сплошной тёмный фон */
   .c-shine,.c-sweep,.deco-diamonds{display:none!important}
+
+  /* запрещаем разрыв страницы внутри любых частей карточки — иначе
+     футер (номер/телефон) съезжает на разлом страниц и накладывается */
+  .c-head,.c-body,.c-foot,.c-meta,.meta-r,.c-contact{
+    break-inside:avoid;page-break-inside:avoid;-webkit-column-break-inside:avoid}
 
   /* градиентный текст (background-clip:text) + drop-shadow часто рендерятся
      в виде смазанного цветного пятна при печати/сохранении в PDF на телефонах —
