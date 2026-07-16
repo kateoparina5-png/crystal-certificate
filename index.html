@@ -476,24 +476,6 @@ function buildClientLink(){
   return dir+'reveal.html?v='+Date.now()+'#'+params.toString();
 }
 
-// ── СОКРАЩЕНИЕ ССЫЛКИ (чтобы в мессенджере не был виден длинный некрасивый текст) ──
-// Если сервис недоступен/не ответил вовремя — тихо используем обычную длинную ссылку,
-// сертификат при этом всё равно откроется и будет работать.
-async function shortenUrl(longUrl){
-  try{
-    const ctrl=new AbortController();
-    const timer=setTimeout(()=>ctrl.abort(), 4000);
-    const r=await fetch('https://tinyurl.com/api-create.php?url='+encodeURIComponent(longUrl), {signal:ctrl.signal});
-    clearTimeout(timer);
-    if(!r.ok)return null;
-    const short=(await r.text()).trim();
-    if(/^https:\/\/tinyurl\.com\//.test(short))return short;
-    return null;
-  }catch(e){
-    return null;
-  }
-}
-
 async function shareClientLink(){
   const amt=document.getElementById('iAmount').value.trim();
   const name=document.getElementById('iRecipient').value.trim();
@@ -506,17 +488,7 @@ async function shareClientLink(){
     if(!goOn)return;
   }
 
-  const longLink=buildClientLink();
-
-  const btn=document.getElementById('btnClientLink');
-  const originalText=btn?btn.textContent:'';
-  if(btn){btn.textContent='⏳ Готовим короткую ссылку…';btn.disabled=true;}
-  let link=longLink;
-  try{
-    const short=await shortenUrl(longLink);
-    if(short)link=short;
-  }catch(e){ /* используем длинную ссылку как есть */ }
-  if(btn){btn.textContent=originalText;btn.disabled=false;}
+  const link=buildClientLink();
 
   // краткая сверка данных перед отправкой — чтобы точно видеть, что попало в ссылку
   const check='Проверьте перед отправкой:\nСумма: '+(amt||'— не указана')+' ₽\nКому: '+(name||'— не указано')+'\n\nСсылка готова, нажмите ОК чтобы скопировать/поделиться.';
