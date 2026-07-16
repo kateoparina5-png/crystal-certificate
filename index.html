@@ -173,6 +173,14 @@ h1.pg-title{color:#93c5fd;font-size:14px;font-weight:500;letter-spacing:2px;text
     -webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;
   }
   .c-main-title{font-size:clamp(44px,7vw,90px)!important}
+
+  /* градиентный текст (background-clip:text) + drop-shadow часто рендерятся
+     в виде смазанного цветного пятна при печати/сохранении в PDF на телефонах —
+     в печати заменяем на обычный сплошной цвет без фильтров */
+  .brand-name{background:none!important;-webkit-background-clip:initial!important;
+    -webkit-text-fill-color:#eaf2ff!important;color:#eaf2ff!important}
+  .c-main-title{background:none!important;-webkit-background-clip:initial!important;
+    -webkit-text-fill-color:#eaf2ff!important;color:#eaf2ff!important;filter:none!important}
 }
 </style>
 </head>
