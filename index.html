@@ -160,6 +160,12 @@ h1.pg-title{color:#93c5fd;font-size:14px;font-weight:500;letter-spacing:2px;text
 .c-phone{font-size:clamp(13px,1.7vw,19px);color:#cfe0fa;font-weight:700;letter-spacing:.3px}
 .c-address{font-size:clamp(9px,1.15vw,12px);color:#5578ad;letter-spacing:.3px;max-width:220px;line-height:1.4}
 
+/* на узких экранах фиксированная пропорция 16:9 обрезает контент через
+   overflow:hidden (не помещаются имя/футер) — даём карточке расти по высоте */
+@media(max-width:640px){
+  .certificate{aspect-ratio:unset;height:auto;min-height:0}
+}
+
 /* ── ПЕЧАТЬ ── */
 @media print{
   body{background:#fff!important;padding:0!important;min-height:auto}
