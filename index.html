@@ -236,6 +236,9 @@ h1.pg-title{color:#93c5fd;font-size:14px;font-weight:500;letter-spacing:2px;text
     в любом браузере (включая телефон), нажимает на мигающий логотип CRYSTAL — и сертификат
     красиво раскрывается с анимацией. Ссылку можно прямо отправить в WhatsApp/мессенджере.
   </p>
+  <div id="debugBox" class="no-print" style="margin-top:14px;padding:10px 12px;background:rgba(0,0,0,.35);
+    border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:10.5px;color:#8aa4c9;
+    font-family:'Courier New',monospace;line-height:1.7;white-space:pre-wrap;word-break:break-all"></div>
 </div>
 
 <!-- ══ СЕРТИФИКАТ ══ -->
@@ -364,6 +367,27 @@ function upd(){
   const msgRow=document.getElementById('msgRow');
   if(msg){msgEl.textContent=msg;msgRow.style.display='flex'}
   else{msgRow.style.display='none'}
+
+  updUpdCount++;
+  updateDebug();
+}
+
+// ── ТЕХНИЧЕСКАЯ ПАНЕЛЬ (временно, для диагностики на реальных телефонах) ──
+let updUpdCount=0, pollTickCount=0;
+function updateDebug(){
+  const box=document.getElementById('debugBox');
+  if(!box)return;
+  function v(id){ const el=document.getElementById(id); return el?JSON.stringify(el.value):'нет поля'; }
+  function t(id){ const el=document.getElementById(id); return el?JSON.stringify(el.textContent):'нет поля'; }
+  box.textContent =
+    'ТЕХ.ИНФО (можно игнорировать, для отладки):\n'+
+    'браузер: '+navigator.userAgent+'\n'+
+    'upd() вызван раз: '+updUpdCount+' | опрос сработал раз: '+pollTickCount+'\n'+
+    'поле "Кому" сейчас = '+v('iRecipient')+'\n'+
+    'поле "От кого" сейчас = '+v('iFrom')+'\n'+
+    'на сертификате имя = '+t('cName')+'\n'+
+    'window.print доступен: '+(typeof window.print==='function')+'\n'+
+    'время: '+new Date().toLocaleTimeString('ru-RU');
 }
 
 // ── КОПИРОВАТЬ КАК ТЕКСТ ──
@@ -505,7 +529,9 @@ upd();
         changed=true;
       }
     });
+    pollTickCount++;
     if(changed)upd();
+    else updateDebug();
   },350);
 })();
 </script>
