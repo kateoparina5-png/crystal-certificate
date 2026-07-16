@@ -7,8 +7,6 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -166,9 +164,9 @@ h1.pg-title{color:#93c5fd;font-size:14px;font-weight:500;letter-spacing:2px;text
 @media print{
   body{background:#fff!important;padding:0!important;min-height:auto}
   .editor,.actions,.pg-title,.no-print{display:none!important}
-  .cert-wrap{max-width:100%}
+  .cert-wrap{max-width:100%;width:100%}
   .certificate{
-    aspect-ratio:unset;height:98vh;border-radius:0;
+    aspect-ratio:16/9;width:100%;height:auto;border-radius:0;
     background:
       radial-gradient(ellipse 55% 65% at 15% 6%, rgba(56,208,255,.20) 0%, transparent 62%),
       linear-gradient(155deg,#040911,#050d1c,#071a30,#040911)!important;
@@ -220,7 +218,7 @@ h1.pg-title{color:#93c5fd;font-size:14px;font-weight:500;letter-spacing:2px;text
 
   </div>
   <div class="actions">
-    <button class="btn btn-blue" id="btnPdf" onclick="generatePDF()">🖨️ Сохранить PDF / Распечатать</button>
+    <button class="btn btn-blue" id="btnPdf" onclick="savePDF()">🖨️ Сохранить PDF / Распечатать</button>
     <button class="btn btn-ghost" onclick="shareClientLink()">🔗 Ссылка для клиента</button>
     <button class="btn btn-ghost" onclick="newNo()">🔄 Новый номер</button>
     <button class="btn btn-ghost" onclick="copyLink()">📋 Копировать как текст</button>
@@ -408,32 +406,11 @@ function copyTextRobust(txt, okMsg){
 }
 
 // ── СОХРАНИТЬ PDF (напрямую генерируем файл — работает и во встроенных браузерах) ──
-async function generatePDF(){
-  const btn=document.getElementById('btnPdf');
-  const oldTxt=btn.textContent;
-  btn.textContent='⏳ Готовим PDF…';
-  btn.disabled=true;
+function savePDF(){
   try{
-    if(typeof html2canvas==='undefined' || !window.jspdf){
-      throw new Error('libs not loaded');
-    }
-    const certEl=document.getElementById('cert');
-    const canvas=await html2canvas(certEl,{scale:2,backgroundColor:'#040911',useCORS:true});
-    const imgData=canvas.toDataURL('image/jpeg',0.95);
-    const {jsPDF}=window.jspdf;
-    const w=canvas.width, h=canvas.height;
-    const pdf=new jsPDF({orientation:w>h?'landscape':'portrait',unit:'px',format:[w,h]});
-    pdf.addImage(imgData,'JPEG',0,0,w,h);
-    const no=(document.getElementById('iNumber').value||'CRYSTAL').replace(/[\\/:*?"<>|]/g,'');
-    pdf.save(`Сертификат CRYSTAL — ${no}.pdf`);
+    window.print();
   }catch(e){
-    try{ window.print(); }
-    catch(e2){
-      alert('Не удалось создать PDF автоматически. Откройте эту страницу в обычном браузере телефона (не внутри мессенджера) и попробуйте снова.');
-    }
-  }finally{
-    btn.textContent=oldTxt;
-    btn.disabled=false;
+    alert('Печать недоступна в этом браузере.\nОткройте страницу в обычном браузере телефона (Safari/Chrome, не внутри мессенджера) и попробуйте снова.\nВ диалоге печати выберите «Сохранить как PDF».');
   }
 }
 
