@@ -436,7 +436,23 @@ function buildClientLink(){
 }
 
 async function shareClientLink(){
+  const amt=document.getElementById('iAmount').value.trim();
+  const name=document.getElementById('iRecipient').value.trim();
+
+  const missing=[];
+  if(!amt)missing.push('сумма');
+  if(!name)missing.push('имя получателя');
+  if(missing.length){
+    const goOn=confirm('Внимание: не заполнено — '+missing.join(', ')+'.\nСсылка всё равно создастся, но сертификат будет неполным.\n\nВсё равно продолжить?');
+    if(!goOn)return;
+  }
+
   const link=buildClientLink();
+
+  // краткая сверка данных перед отправкой — чтобы точно видеть, что попало в ссылку
+  const check='Проверьте перед отправкой:\nСумма: '+(amt||'— не указана')+' ₽\nКому: '+(name||'— не указано')+'\n\nСсылка готова, нажмите ОК чтобы скопировать/поделиться.';
+  if(!confirm(check))return;
+
   if(navigator.share){
     try{
       await navigator.share({title:'Подарочный сертификат CRYSTAL', text:'Вам подарочный сертификат от CRYSTAL 🎉', url:link});
@@ -460,6 +476,30 @@ upd();
     el.addEventListener(evt, upd);
   });
 });
+
+// ── СВЕРХНАДЁЖНОЕ ОБНОВЛЕНИЕ (на случай если события вообще не доходят) ──
+// Опрашиваем значения полей напрямую — не зависит от того, срабатывают ли
+// input/change/keyup в конкретном встроенном браузере или нет.
+(function(){
+  const ids=['iAmount','iRecipient','iFrom','iExpiry','iMsg'];
+  const lastVals={};
+  ids.forEach(function(id){
+    const el=document.getElementById(id);
+    lastVals[id]=el?el.value:'';
+  });
+  setInterval(function(){
+    let changed=false;
+    ids.forEach(function(id){
+      const el=document.getElementById(id);
+      if(!el)return;
+      if(lastVals[id]!==el.value){
+        lastVals[id]=el.value;
+        changed=true;
+      }
+    });
+    if(changed)upd();
+  },350);
+})();
 </script>
 </body>
 </html>
