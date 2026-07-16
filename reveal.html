@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ваш подарочный сертификат — CRYSTAL</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -96,7 +99,7 @@ function fmtDate(s){
 async function init(){
   const data=qp();
   try{
-    const res=await fetch('./index.html');
+    const res=await fetch('./index.html?nocache='+Date.now(),{cache:'no-store'});
     if(!res.ok)throw new Error('fetch failed');
     const text=await res.text();
     const doc=new DOMParser().parseFromString(text,'text/html');
