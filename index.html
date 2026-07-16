@@ -499,7 +499,7 @@ function buildClientLink(){
   if(msg)params.set('msg',msg);
 
   const dir=location.href.replace(/[^/]*$/,'');
-  return dir+'reveal.html#'+params.toString();
+  return dir+'reveal.html?v='+Date.now()+'#'+params.toString();
 }
 
 async function shareClientLink(){
