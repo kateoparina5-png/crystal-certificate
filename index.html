@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Подарочный сертификат — CRYSTAL</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -215,7 +220,7 @@ h1.pg-title{color:#93c5fd;font-size:14px;font-weight:500;letter-spacing:2px;text
 
   </div>
   <div class="actions">
-    <button class="btn btn-blue" onclick="window.print()">🖨️ Сохранить PDF / Распечатать</button>
+    <button class="btn btn-blue" id="btnPdf" onclick="generatePDF()">🖨️ Сохранить PDF / Распечатать</button>
     <button class="btn btn-ghost" onclick="shareClientLink()">🔗 Ссылка для клиента</button>
     <button class="btn btn-ghost" onclick="newNo()">🔄 Новый номер</button>
     <button class="btn btn-ghost" onclick="copyLink()">📋 Копировать как текст</button>
@@ -374,7 +379,62 @@ ${from?`💝 От: ${from}\n`:''}📅 Действителен до: ${fmtDate(e
 ${msg?`\n✉️ ${msg}\n`:''}
 📞 Для записи: +7 951 365-24-10
 📍 пл. Карла Маркса 1к5 | ул. Широкая 2а к5`;
-  navigator.clipboard.writeText(txt).then(()=>alert('Текст скопирован! Можно вставить в мессенджер.'));
+  copyTextRobust(txt, 'Текст скопирован! Можно вставить в мессенджер.');
+}
+
+// ── НАДЁЖНОЕ КОПИРОВАНИЕ (работает и во встроенных браузерах мессенджеров) ──
+function copyTextRobust(txt, okMsg){
+  function fallback(){
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=txt;
+      ta.style.position='fixed';
+      ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.focus();ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      if(ok){alert(okMsg);}
+      else{prompt('Скопируйте вручную (выделите и Ctrl/⌘+C):', txt);}
+    }catch(e){
+      prompt('Скопируйте вручную (выделите и Ctrl/⌘+C):', txt);
+    }
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>alert(okMsg)).catch(fallback);
+  }else{
+    fallback();
+  }
+}
+
+// ── СОХРАНИТЬ PDF (напрямую генерируем файл — работает и во встроенных браузерах) ──
+async function generatePDF(){
+  const btn=document.getElementById('btnPdf');
+  const oldTxt=btn.textContent;
+  btn.textContent='⏳ Готовим PDF…';
+  btn.disabled=true;
+  try{
+    if(typeof html2canvas==='undefined' || !window.jspdf){
+      throw new Error('libs not loaded');
+    }
+    const certEl=document.getElementById('cert');
+    const canvas=await html2canvas(certEl,{scale:2,backgroundColor:'#040911',useCORS:true});
+    const imgData=canvas.toDataURL('image/jpeg',0.95);
+    const {jsPDF}=window.jspdf;
+    const w=canvas.width, h=canvas.height;
+    const pdf=new jsPDF({orientation:w>h?'landscape':'portrait',unit:'px',format:[w,h]});
+    pdf.addImage(imgData,'JPEG',0,0,w,h);
+    const no=(document.getElementById('iNumber').value||'CRYSTAL').replace(/[\\/:*?"<>|]/g,'');
+    pdf.save(`Сертификат CRYSTAL — ${no}.pdf`);
+  }catch(e){
+    try{ window.print(); }
+    catch(e2){
+      alert('Не удалось создать PDF автоматически. Откройте эту страницу в обычном браузере телефона (не внутри мессенджера) и попробуйте снова.');
+    }
+  }finally{
+    btn.textContent=oldTxt;
+    btn.disabled=false;
+  }
 }
 
 // ── ССЫЛКА ДЛЯ КЛИЕНТА (вместо файла — работает на любом телефоне) ──
@@ -406,19 +466,23 @@ async function shareClientLink(){
       return;
     }catch(e){ /* отменено — пробуем скопировать */ }
   }
-  try{
-    await navigator.clipboard.writeText(link);
-    alert('Ссылка на сертификат скопирована!\nОтправьте её клиенту в WhatsApp / любом мессенджере — откроется на любом телефоне.');
-  }catch(e){
-    prompt('Скопируйте ссылку вручную:', link);
-  }
+  copyTextRobust(link, 'Ссылка на сертификат скопирована!\nОтправьте её клиенту в WhatsApp / любом мессенджере — откроется на любом телефоне.');
 }
-
 
 // ── ИНИЦИАЛИЗАЦИЯ ──
 document.getElementById('iExpiry').value=defExpiry();
 newNo();
 upd();
+
+// на некоторых встроенных браузерах мессенджеров событие 'input' может не
+// срабатывать для нелатинской раскладки/автозамены — дублируем на несколько событий
+['iAmount','iRecipient','iFrom','iExpiry','iMsg'].forEach(function(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  ['input','change','keyup','compositionend','blur'].forEach(function(evt){
+    el.addEventListener(evt, upd);
+  });
+});
 </script>
 </body>
 </html>
