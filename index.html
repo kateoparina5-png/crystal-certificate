@@ -391,7 +391,9 @@ function updateDebug(){
     'upd() вызван раз: '+updUpdCount+' | опрос сработал раз: '+pollTickCount+'\n'+
     'поле "Кому" сейчас = '+v('iRecipient')+'\n'+
     'поле "От кого" сейчас = '+v('iFrom')+'\n'+
+    'поле "Поздравление" сейчас = '+v('iMsg')+'\n'+
     'на сертификате имя = '+t('cName')+'\n'+
+    'на сертификате поздравление = '+t('cMsg')+' (показано: '+(document.getElementById('msgRow')?document.getElementById('msgRow').style.display:'?')+')\n'+
     'window.print доступен: '+(typeof window.print==='function')+'\n'+
     'время: '+new Date().toLocaleTimeString('ru-RU');
 }
@@ -445,15 +447,31 @@ function copyTextRobust(txt, okMsg){
 
 // ── СОХРАНИТЬ PDF (напрямую генерируем файл — работает и во встроенных браузерах) ──
 function savePDF(){
+  upd(); // принудительно синхронизируем сертификат с полями перед печатью
+
+  let printStarted=false;
+  const markStarted=function(){ printStarted=true; };
+  window.addEventListener('beforeprint', markStarted, {once:true});
+
   try{
     window.print();
   }catch(e){
+    window.removeEventListener('beforeprint', markStarted);
     alert('Печать недоступна в этом браузере.\nОткройте страницу в обычном браузере телефона (Safari/Chrome, не внутри мессенджера) и попробуйте снова.\nВ диалоге печати выберите «Сохранить как PDF».');
+    return;
   }
+
+  setTimeout(function(){
+    window.removeEventListener('beforeprint', markStarted);
+    if(!printStarted){
+      alert('Диалог печати не открылся.\nЭто ограничение встроенного браузера мессенджера (WhatsApp/Telegram/MAX и т.п.).\nОткройте эту ссылку в обычном Safari или Chrome (не внутри мессенджера) и нажмите «Сохранить PDF» ещё раз.');
+    }
+  },700);
 }
 
 // ── ССЫЛКА ДЛЯ КЛИЕНТА (вместо файла — работает на любом телефоне) ──
 function buildClientLink(){
+  upd(); // синхронизация перед отправкой ссылки
   const amt=document.getElementById('iAmount').value||'';
   const name=document.getElementById('iRecipient').value.trim();
   const from=document.getElementById('iFrom').value.trim();
@@ -538,7 +556,7 @@ upd();
     pollTickCount++;
     if(changed)upd();
     else updateDebug();
-  },350);
+  },200);
 })();
 </script>
 </body>
