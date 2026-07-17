@@ -7,6 +7,17 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<script>
+// Принудительно обходим кэш браузера/встроенного браузера мессенджера при обычном
+// открытии страницы (например, по сохранённой ссылке/ярлыку) — иначе может
+// показываться старая закэшированная версия редактора без последних исправлений.
+(function(){
+  if(!location.search.includes('_cb=')){
+    var sep = location.search ? '&' : '?';
+    location.replace(location.pathname + location.search + sep + '_cb=' + Date.now() + location.hash);
+  }
+})();
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
