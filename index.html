@@ -475,7 +475,13 @@ function buildClientLink(){
   const no=document.getElementById('iNumber').value;
   const msg=document.getElementById('iMsg').value.trim();
 
+  // Данные передаём через query-параметры (?amt=...), а не через #hash.
+  // Некоторые встроенные браузеры мессенджеров (например MAX) при открытии
+  // ссылки из чата обрезают всё после "#" — из-за этого получатель видел
+  // пустой сертификат, хотя в самой ссылке данные были. Query-параметры
+  // такие браузеры не трогают, поэтому переносим данные туда.
   const params=new URLSearchParams();
+  params.set('v',Date.now());
   if(amt)params.set('amt',amt);
   if(name)params.set('name',name);
   if(from)params.set('from',from);
@@ -484,7 +490,7 @@ function buildClientLink(){
   if(msg)params.set('msg',msg);
 
   const dir=location.href.replace(/[^/]*$/,'');
-  return dir+'reveal.html?v='+Date.now()+'#'+params.toString();
+  return dir+'reveal.html?'+params.toString();
 }
 
 async function shareClientLink(){

@@ -86,8 +86,15 @@ body{
 
 <script>
 function qp(){
-  const h=location.hash.slice(1);
-  const p=new URLSearchParams(h);
+  // Данные читаем из query-строки (?amt=...), а не из #hash: некоторые встроенные
+  // браузеры мессенджеров (например MAX) обрезают всё после "#" при открытии
+  // ссылки из чата, из-за чего сертификат показывался пустым. На всякий случай
+  // как запасной вариант всё ещё проверяем и #hash — вдруг ссылка старого формата.
+  const p=new URLSearchParams(location.search);
+  if(![...p.keys()].length && location.hash.length>1){
+    const hp=new URLSearchParams(location.hash.slice(1));
+    hp.forEach((v,k)=>p.set(k,v));
+  }
   return {
     amt:p.get('amt')||'',
     name:p.get('name')||'',
